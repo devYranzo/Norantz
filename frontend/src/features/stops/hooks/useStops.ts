@@ -7,6 +7,13 @@ import { TransitStop } from "@/types/transit";
 import { regionToBoundingBox } from "@/utils/regionToBoundingBox";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
+// Laravel envuelve las colecciones de Resource en { data: [...] } por
+// defecto, así que la respuesta del endpoint tiene esta forma, no
+// directamente un array.
+type StopsResponse = {
+    data: TransitStop[];
+};
+
 export function useStops(region: Region | null) {
     const [stops, setStops] = useState<TransitStop[]>([]);
     const [error, setError] = useState<Error | null>(null);
@@ -20,12 +27,12 @@ export function useStops(region: Region | null) {
         const controller = new AbortController();
 
         apiClient
-            .get<TransitStop[]>("/stops", {
+            .get<StopsResponse>("/stops", {
                 params: regionToBoundingBox(debouncedRegion),
                 signal: controller.signal,
             })
             .then((response) => {
-                setStops(response.data);
+                setStops(response.data.data);
                 setError(null);
             })
             .catch((err) => {
