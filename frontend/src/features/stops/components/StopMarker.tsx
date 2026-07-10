@@ -3,7 +3,8 @@ import { Marker } from "react-native-maps";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { TransitStop, TransitMode } from "@/types/transit";
-import { getTransitModeColor } from "@/services/transit/transitModes";
+
+const NEUTRAL_COLOR = "#374151";
 
 type StopMarkerProps = {
     stop: TransitStop;
@@ -28,7 +29,6 @@ function getStopIcon(mode: TransitMode) {
 
 export function StopMarker({stop, selected = false, onPress}: StopMarkerProps) {
     const mode = getStopMode(stop);
-    const color = getTransitModeColor(mode);
 
     return (
         <Marker
@@ -42,15 +42,15 @@ export function StopMarker({stop, selected = false, onPress}: StopMarkerProps) {
                 style={[
                     styles.marker,
                     {
-                        backgroundColor: selected ? color : "#FFFFFF",
-                        borderColor: selected ? color : "#D1D5DB",
+                        backgroundColor: selected ? NEUTRAL_COLOR : "#FFFFFF",
+                        borderColor: selected ? NEUTRAL_COLOR : "#D1D5DB",
                     },
                 ]}
             >
                 <MaterialCommunityIcons
                     name={getStopIcon(mode)}
                     size={16}
-                    color={selected ? "#FFFFFF" : color}
+                    color={selected ? "#FFFFFF" : NEUTRAL_COLOR}
                 />
             </View>
         </Marker>
