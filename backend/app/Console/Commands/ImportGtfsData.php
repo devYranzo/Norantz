@@ -26,6 +26,12 @@ class ImportGtfsData extends Command
 
     public function handle(): int
     {
+        // Los imports GTFS grandes (Bilbobus, Bizkaibus...) pueden superar
+        // fácilmente el memory_limit por defecto de PHP para peticiones web
+        // (128M). Como esto es un comando CLI, no una petición HTTP, subirlo
+        // aquí es seguro y no afecta a tu configuración de producción.
+        ini_set('memory_limit', '1G');
+
         $agencyKey = $this->argument('agency');
         $url = config("gtfs.feeds.{$agencyKey}");
 
@@ -39,19 +45,35 @@ class ImportGtfsData extends Command
         $extractPath = $this->extract($zipPath, $agencyKey);
 
         DB::transaction(function () use ($extractPath, $agencyKey) {
+            $this->info('Importando agencia...');
             $this->importAgency($extractPath);
+
+            $this->info('Importando calendario...');
             $this->importCalendar($extractPath);
             $this->ensureCalendarStubs($extractPath);
             $this->importCalendarDates($extractPath);
+
+            $this->info('Importando shapes...');
             $this->importShapes($extractPath);
+
+            $this->info('Importando rutas...');
             $this->importRoutes($extractPath, $agencyKey);
+
+            $this->info('Importando paradas...');
             $this->importStops($extractPath, $agencyKey);
+
+            $this->info('Importando trips...');
             $this->importTrips($extractPath);
+
+            $this->info('Importando stop_times (puede tardar)...');
             $this->importStopTimes($extractPath);
+
             $this->syncStopModes();
         });
 
         $this->info("GTFS de '{$agencyKey}' importado correctamente.");
+
+        $this->call('catalog:build');
 
         return self::SUCCESS;
     }

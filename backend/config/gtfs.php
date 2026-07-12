@@ -18,6 +18,7 @@ return [
     */
     'feeds' => [
         'tuvisa' => env('GTFS_TUVISA_URL'),
+        'bilbobus' => env('GTFS_BILBOBUS_URL'),
         // añade aquí el resto de operadores que vayas a soportar
     ],
 
